@@ -154,9 +154,11 @@ function onPlayerStateChange(e) {
   if (e.data === YT.PlayerState.PLAYING) {
     els.btnPlay.textContent = "⏸";
     if (!state.duration) onVideoLoaded();
+    acquireWakeLock();
   } else {
     els.btnPlay.textContent = "▶";
     if (e.data === YT.PlayerState.CUED && !state.duration) onVideoLoaded();
+    releaseWakeLock();
   }
   if (e.data === YT.PlayerState.ENDED && state.looping) {
     state.player.seekTo(state.a, true);
@@ -183,6 +185,42 @@ function onVideoLoaded() {
   loadNotes();
   saveLastSession();
 }
+
+/* ---------------- wake lock ---------------- */
+
+// Keep the screen on while looping: iOS Safari pauses playback and freezes
+// timers once the screen locks, which kills the A–B loop.
+let wakeLock = null;
+
+async function acquireWakeLock() {
+  if (!("wakeLock" in navigator) || wakeLock || acquireWakeLock._pending) return;
+  acquireWakeLock._pending = true;
+  try {
+    wakeLock = await navigator.wakeLock.request("screen");
+    wakeLock.addEventListener("release", () => { wakeLock = null; });
+  } catch (_) { /* denied (low battery, hidden page, …) */ }
+  acquireWakeLock._pending = false;
+}
+
+function releaseWakeLock() {
+  if (wakeLock) {
+    wakeLock.release().catch(() => {});
+    wakeLock = null;
+  }
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible" || !state.playerReady) return;
+  if (state.player.getPlayerState() === YT.PlayerState.PLAYING) {
+    // The OS drops the wake lock when the page is hidden
+    acquireWakeLock();
+  }
+  // Timers were suspended while hidden; snap back if playback escaped the loop
+  if (state.looping && state.b > state.a && state.duration) {
+    const t = state.player.getCurrentTime();
+    if (t >= state.b || t < state.a - 2) state.player.seekTo(state.a, true);
+  }
+});
 
 /* ---------------- loop engine ---------------- */
 
