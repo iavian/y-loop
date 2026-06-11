@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LoopLab — Loop any YouTube video</title>
+<meta name="description" content="Loop any section of a YouTube video. Draggable A-B loop points, fine speed control, saved loops, shareable links, and keyboard shortcuts. Free, no signup.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>🔁</text></svg>">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">🔁 <span>Loop<b>Lab</b></span></div>
+  <form id="url-form" class="url-form">
+    <input id="url-input" type="text" placeholder="Paste a YouTube URL or video ID…" autocomplete="off" spellcheck="false">
+    <button type="submit" class="btn primary">Load</button>
+  </form>
+  <button id="help-btn" class="btn ghost" title="Keyboard shortcuts (?)">?</button>
+</header>
+
+<main id="app" class="app hidden">
+  <section class="player-col">
+    <div class="player-wrap"><div id="player"></div></div>
+
+    <div class="timeline" id="timeline">
+      <div class="track" id="track">
+        <div class="range" id="range"></div>
+        <div class="buffer" id="progress-fill"></div>
+        <div class="playhead" id="playhead"></div>
+        <div class="handle handle-a" id="handle-a" title="Drag to set loop start (A)"><span class="time" id="handle-a-time"></span><label>A</label></div>
+        <div class="handle handle-b" id="handle-b" title="Drag to set loop end (B)"><span class="time" id="handle-b-time"></span><label>B</label></div>
+      </div>
+      <div class="timeline-times">
+        <span id="time-current">0:00</span>
+        <span id="time-duration">0:00</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="control-group">
+        <button id="btn-to-a" class="btn" title="Jump to A (R)">⏮ A</button>
+        <button id="btn-play" class="btn primary big" title="Play/Pause (Space)">▶</button>
+        <button id="btn-loop" class="btn toggle" title="Toggle loop (L)">🔁 Loop</button>
+      </div>
+
+      <div class="control-group ab-group">
+        <div class="ab-field">
+          <button id="btn-set-a" class="btn small" title="Set A to current time (A)">Set A</button>
+          <input id="input-a" class="time-input" value="0:00.0" title="Loop start">
+        </div>
+        <div class="ab-field">
+          <button id="btn-set-b" class="btn small" title="Set B to current time (B)">Set B</button>
+          <input id="input-b" class="time-input" value="0:00.0" title="Loop end">
+        </div>
+        <button id="btn-clear" class="btn small ghost" title="Clear loop (C)">Clear</button>
+        <span class="loop-stats">
+          <span id="loop-length">—</span> · <span id="loop-count">0 plays</span>
+        </span>
+      </div>
+
+      <div class="control-group speed-group">
+        <button id="speed-down" class="btn small" title="Slower ( [ )">−</button>
+        <input id="speed-slider" type="range" min="0.25" max="2" step="0.05" value="1">
+        <button id="speed-up" class="btn small" title="Faster ( ] )">+</button>
+        <button id="speed-reset" class="btn small ghost" title="Reset speed ( = )"><span id="speed-label">1.00×</span></button>
+      </div>
+
+      <div class="control-group">
+        <button id="btn-share" class="btn" title="Copy a link to this exact loop">🔗 Share loop</button>
+      </div>
+    </div>
+  </section>
+
+  <aside class="side-col">
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Saved loops</h2>
+        <button id="btn-save-loop" class="btn small primary" title="Save current loop (S)">+ Save</button>
+      </div>
+      <ul id="loops-list" class="list"><li class="empty">No saved loops for this video yet.</li></ul>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Notes</h2>
+        <button id="btn-stamp" class="btn small" title="Insert current timestamp (T)">+ 0:00</button>
+      </div>
+      <textarea id="notes" placeholder="Practice notes for this video… (saved automatically)"></textarea>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><h2>Recent videos</h2></div>
+      <ul id="recent-list" class="list"><li class="empty">Videos you load will appear here.</li></ul>
+    </section>
+  </aside>
+</main>
+
+<section id="hero" class="hero">
+  <h1>Loop any part of any YouTube video.</h1>
+  <p>Drag A-B markers, slow it down, save your loops, share them with a link.<br>
+  Built for musicians, dancers, language learners, and athletes.</p>
+  <ul class="features">
+    <li><b>🎯 Draggable A-B loop</b><span>Set loop points by dragging handles right on the timeline — no fiddly typing.</span></li>
+    <li><b>🐢 Fine speed control</b><span>0.25× to 2× in 0.05 steps. Speed is remembered per saved loop.</span></li>
+    <li><b>💾 Saved loops &amp; notes</b><span>Name and save multiple loops per video. Everything stays in your browser.</span></li>
+    <li><b>🔗 Shareable links</b><span>Copy a URL that opens the exact loop, at the exact speed, for anyone.</span></li>
+    <li><b>⌨️ Keyboard-first</b><span>Space, A, B, L, arrows, brackets — press <kbd>?</kbd> to see them all.</span></li>
+  </ul>
+  <p class="hint">Paste a YouTube link above to start ↑</p>
+</section>
+
+<dialog id="help-dialog">
+  <h2>Keyboard shortcuts</h2>
+  <table>
+    <tr><td><kbd>Space</kbd> / <kbd>K</kbd></td><td>Play / pause</td></tr>
+    <tr><td><kbd>A</kbd> / <kbd>B</kbd></td><td>Set loop start / end at current time</td></tr>
+    <tr><td><kbd>L</kbd></td><td>Toggle looping</td></tr>
+    <tr><td><kbd>R</kbd> / <kbd>0</kbd></td><td>Jump to loop start</td></tr>
+    <tr><td><kbd>←</kbd> / <kbd>→</kbd></td><td>Seek 5s (with <kbd>Shift</kbd>: 1s)</td></tr>
+    <tr><td><kbd>[</kbd> / <kbd>]</kbd></td><td>Speed down / up</td></tr>
+    <tr><td><kbd>=</kbd></td><td>Reset speed to 1×</td></tr>
+    <tr><td><kbd>S</kbd></td><td>Save current loop</td></tr>
+    <tr><td><kbd>C</kbd></td><td>Clear loop points</td></tr>
+    <tr><td><kbd>T</kbd></td><td>Insert timestamp into notes</td></tr>
+    <tr><td><kbd>1</kbd>–<kbd>9</kbd></td><td>Jump to 10%–90% of video</td></tr>
+    <tr><td><kbd>?</kbd></td><td>Show this help</td></tr>
+  </table>
+  <form method="dialog"><button class="btn primary">Close</button></form>
+</dialog>
+
+<div id="toast" class="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
