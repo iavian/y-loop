@@ -14,6 +14,7 @@ const state = {
   looping: true,
   loopCount: 0,
   rate: 1,
+  autoplay: true,
   pendingLoad: null, // {videoId, a, b, rate} queued before API ready
 };
 
@@ -35,6 +36,7 @@ const els = {
   timeDuration: $("#time-duration"),
   btnPlay: $("#btn-play"),
   btnLoop: $("#btn-loop"),
+  btnAutoplay: $("#btn-autoplay"),
   inputA: $("#input-a"),
   inputB: $("#input-b"),
   loopLength: $("#loop-length"),
@@ -103,6 +105,7 @@ const loopsKey = (id) => `looplab:loops:${id}`;
 const notesKey = (id) => `looplab:notes:${id}`;
 const RECENT_KEY = "looplab:recent";
 const LAST_KEY = "looplab:last";
+const AUTOPLAY_KEY = "looplab:autoplay";
 
 /* ---------------- YouTube player ---------------- */
 
@@ -131,7 +134,7 @@ function createPlayer({ videoId, a, b, rate }) {
   state.videoTitle = "";
 
   if (state.player) {
-    state.player.loadVideoById(videoId);
+    state.autoplay ? state.player.loadVideoById(videoId) : state.player.cueVideoById(videoId);
     return;
   }
   state.playerReady = false;
@@ -156,6 +159,7 @@ function onPlayerStateChange(e) {
     if (!state.duration) onVideoLoaded();
   } else {
     els.btnPlay.textContent = "▶";
+    if (e.data === YT.PlayerState.CUED && !state.duration) onVideoLoaded();
   }
   if (e.data === YT.PlayerState.ENDED && state.looping) {
     state.player.seekTo(state.a, true);
@@ -177,8 +181,10 @@ function onVideoLoaded() {
   state.player.setPlaybackRate(state.rate);
   els.speedSlider.value = state.rate;
   els.timeDuration.textContent = fmt(state.duration);
-  if (state.a > 0) state.player.seekTo(state.a, true);
-  state.player.playVideo();
+  if (state.autoplay) {
+    if (state.a > 0) state.player.seekTo(state.a, true);
+    state.player.playVideo();
+  }
   renderLoopUI();
   renderSavedLoops();
   loadNotes();
@@ -418,6 +424,7 @@ function buildLoopUrl() {
     url.searchParams.set("b", state.b.toFixed(1));
   }
   if (state.rate !== 1) url.searchParams.set("rate", state.rate);
+  if (!state.autoplay) url.searchParams.set("autoplay", "0");
   return url;
 }
 
@@ -469,6 +476,18 @@ function toggleLoop() {
   toast(state.looping ? "Looping on" : "Looping off");
 }
 
+function renderAutoplayUI() {
+  els.btnAutoplay.classList.toggle("on", state.autoplay);
+}
+
+function toggleAutoplay() {
+  state.autoplay = !state.autoplay;
+  store.set(AUTOPLAY_KEY, state.autoplay);
+  renderAutoplayUI();
+  if (state.videoId) syncUrl();
+  toast(state.autoplay ? "Autoplay on" : "Autoplay off");
+}
+
 function jumpToA() {
   if (!state.playerReady) return;
   state.player.seekTo(state.a, true);
@@ -482,6 +501,7 @@ function seekBy(dt) {
 
 $("#btn-play").addEventListener("click", togglePlay);
 $("#btn-loop").addEventListener("click", toggleLoop);
+$("#btn-autoplay").addEventListener("click", toggleAutoplay);
 $("#btn-to-a").addEventListener("click", jumpToA);
 $("#btn-set-a").addEventListener("click", () => {
   if (!state.playerReady) return;
@@ -557,7 +577,13 @@ document.addEventListener("keydown", (e) => {
   renderRecent();
   setRate(1);
 
+  state.autoplay = store.get(AUTOPLAY_KEY, true);
+
   const params = new URLSearchParams(location.search);
+  // A shared link's flag overrides the saved preference for this visit
+  if (params.has("autoplay")) state.autoplay = params.get("autoplay") !== "0";
+  renderAutoplayUI();
+
   const fromUrl = params.get("v") && parseVideoId(params.get("v"));
   if (fromUrl) {
     loadVideo({
