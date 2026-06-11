@@ -181,14 +181,33 @@ function onVideoLoaded() {
   state.player.setPlaybackRate(state.rate);
   els.speedSlider.value = state.rate;
   els.timeDuration.textContent = fmt(state.duration);
-  if (state.autoplay) {
-    if (state.a > 0) state.player.seekTo(state.a, true);
-    state.player.playVideo();
-  }
+  if (state.autoplay) attemptAutoplay();
   renderLoopUI();
   renderSavedLoops();
   loadNotes();
   saveLastSession();
+}
+
+function attemptAutoplay() {
+  if (state.a > 0) state.player.seekTo(state.a, true);
+  state.player.playVideo();
+  // Without a user gesture, browsers block unmuted playback started from
+  // script. If the play call didn't take, retry muted and restore sound on
+  // the first interaction.
+  setTimeout(() => {
+    const s = state.player.getPlayerState();
+    if (s === YT.PlayerState.PLAYING || s === YT.PlayerState.BUFFERING) return;
+    state.player.mute();
+    state.player.playVideo();
+    toast("Playing muted (browser autoplay policy) — click or press a key for sound");
+    const unmute = () => {
+      state.player.unMute();
+      document.removeEventListener("pointerdown", unmute);
+      document.removeEventListener("keydown", unmute);
+    };
+    document.addEventListener("pointerdown", unmute);
+    document.addEventListener("keydown", unmute);
+  }, 700);
 }
 
 /* ---------------- loop engine ---------------- */

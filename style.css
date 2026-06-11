@@ -179,6 +179,8 @@ body {
   white-space: nowrap;
   pointer-events: none;
 }
+/* invisible padding so the handles are grabbable with a finger */
+.handle::after { content: ""; position: absolute; inset: -8px -10px; }
 .handle-a { background: var(--a-color); }
 .handle-b { background: var(--b-color); }
 .handle:hover, .handle.dragging { filter: brightness(1.25); }
@@ -364,3 +366,33 @@ dialog form { text-align: right; }
   z-index: 100;
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ---- mobile ---- */
+@media (max-width: 640px) {
+  .topbar { flex-wrap: wrap; gap: 10px; padding: 10px 12px; }
+  .brand { font-size: 17px; }
+  #help-btn { display: none; } /* shortcuts are keyboard-only */
+  .url-form { flex-basis: 100%; max-width: none; }
+  /* below 16px iOS Safari zooms the page when an input gets focus */
+  .url-form input, .time-input, #notes { font-size: 16px; }
+
+  .app { padding: 12px; gap: 14px; }
+  .timeline { margin: 26px 0 8px; } /* room for the A/B time bubbles */
+
+  .controls { gap: 10px; margin-top: 12px; }
+  .control-group { width: 100%; justify-content: center; flex-wrap: wrap; }
+  .time-input { width: 84px; }
+  .loop-stats { flex-basis: 100%; text-align: center; }
+  .speed-group input[type="range"] { flex: 1; width: auto; }
+
+  .panel { padding: 12px; margin-bottom: 12px; }
+
+  .hero { margin: 32px auto; padding: 0 16px; }
+  .hero h1 { font-size: 26px; }
+  .hero > p { font-size: 15px; }
+}
+
+/* touch devices have no hover to reveal the delete buttons */
+@media (pointer: coarse) {
+  .item .del { visibility: visible; }
+}
