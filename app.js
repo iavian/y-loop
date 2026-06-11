@@ -424,7 +424,7 @@ function buildLoopUrl() {
     url.searchParams.set("b", state.b.toFixed(1));
   }
   if (state.rate !== 1) url.searchParams.set("rate", state.rate);
-  if (!state.autoplay) url.searchParams.set("autoplay", "0");
+  url.searchParams.set("autoplay", state.autoplay ? "1" : "0");
   return url;
 }
 
