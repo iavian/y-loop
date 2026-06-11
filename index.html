@@ -3,10 +3,57 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LoopLab — Loop any YouTube video</title>
+<title>LoopLab — Loop YouTube Videos with A-B Repeat &amp; Speed Control</title>
 <meta name="description" content="Loop any section of a YouTube video. Draggable A-B loop points, fine speed control, saved loops, shareable links, and keyboard shortcuts. Free, no signup.">
+<link rel="canonical" href="https://loop.iavian.net/">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#0e1014">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LoopLab">
+<meta property="og:title" content="LoopLab — Loop YouTube Videos with A-B Repeat & Speed Control">
+<meta property="og:description" content="Loop any section of a YouTube video. Draggable A-B loop points, fine speed control, saved loops, shareable links, and keyboard shortcuts. Free, no signup.">
+<meta property="og:url" content="https://loop.iavian.net/">
+<meta property="og:image" content="https://loop.iavian.net/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="LoopLab — loop any part of any YouTube video">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="LoopLab — Loop YouTube Videos with A-B Repeat & Speed Control">
+<meta name="twitter:description" content="Loop any section of a YouTube video. Draggable A-B loop points, fine speed control, saved loops, shareable links. Free, no signup.">
+<meta name="twitter:image" content="https://loop.iavian.net/og-image.png">
+
 <link rel="stylesheet" href="style.css?v=20260611.3">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "LoopLab",
+  "url": "https://loop.iavian.net/",
+  "description": "Loop any section of a YouTube video. Draggable A-B loop points, fine speed control, saved loops, shareable links, and keyboard shortcuts. Free, no signup.",
+  "applicationCategory": "MultimediaApplication",
+  "operatingSystem": "Any",
+  "browserRequirements": "Requires JavaScript",
+  "image": "https://loop.iavian.net/og-image.png",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "featureList": [
+    "Draggable A-B loop points on the video timeline",
+    "Playback speed control from 0.25x to 2x in 0.05 steps",
+    "Save and name multiple loops per video",
+    "Shareable links that open the exact loop at the exact speed",
+    "Per-video practice notes with timestamps",
+    "Keyboard shortcuts for every action"
+  ]
+}
+</script>
 </head>
 <body>
 <header class="topbar">
@@ -66,7 +113,6 @@
       </div>
 
       <div class="control-group">
-        <button id="btn-autoplay" class="btn toggle" title="Play automatically when a video loads">⚡ Autoplay</button>
         <button id="btn-share" class="btn" title="Copy a link to this exact loop">🔗 Share loop</button>
       </div>
     </div>
@@ -131,6 +177,6 @@
 
 <div id="toast" class="toast"></div>
 
-<script src="app.js?v=20260611.2"></script>
+<script src="app.js?v=20260611.3"></script>
 </body>
 </html>

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://loop.iavian.net/sitemap.xml
