@@ -196,9 +196,15 @@ function attemptAutoplay() {
   // the first interaction.
   setTimeout(() => {
     const s = state.player.getPlayerState();
-    if (s === YT.PlayerState.PLAYING || s === YT.PlayerState.BUFFERING) return;
-    state.player.mute();
-    state.player.playVideo();
+    const playing = s === YT.PlayerState.PLAYING || s === YT.PlayerState.BUFFERING;
+    // Playing with sound — nothing to do. Note: when audible autoplay is
+    // blocked, YouTube may start playback itself but muted, so PLAYING
+    // alone doesn't mean we have audio.
+    if (playing && !state.player.isMuted()) return;
+    if (!playing) {
+      state.player.mute();
+      state.player.playVideo();
+    }
     toast("Playing muted (browser autoplay policy) — click or press a key for sound");
     const unmute = () => {
       state.player.unMute();
